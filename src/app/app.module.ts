@@ -3,7 +3,6 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { LoginComponent } from './login/login.component';
 import { HomeComponent } from './home/home.component';
 import { MsalBroadcastService, MsalGuard, MsalInterceptor, MsalModule, MsalRedirectComponent, MsalService, MSAL_GUARD_CONFIG, MSAL_INSTANCE, MSAL_INTERCEPTOR_CONFIG } from '@azure/msal-angular';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -13,7 +12,6 @@ import { AppAuthService } from './services/login.service';
 @NgModule({
   declarations: [
     AppComponent,
-    LoginComponent,
     HomeComponent
   ],
   imports: [
