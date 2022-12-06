@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { AppAuthService } from './services/login.service';
 import { Router } from '@angular/router';
 
@@ -7,18 +7,18 @@ import { Router } from '@angular/router';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements AfterViewInit {
   title = 'azure-ad-login';
 
   public isLoggedIn = false;
 
   constructor(private readonly authService: AppAuthService, private readonly route: Router) {
   }
-  ngOnInit(): void {
+  ngAfterViewInit(): void {
     console.log('status: ', this.isLoggedIn);
     this.isLoggedIn = this.authService.isAuthenticated();
     if(!this.isLoggedIn) {
-      this.route.navigateByUrl('/login');
+      this.authService.login();
     }
   }
 

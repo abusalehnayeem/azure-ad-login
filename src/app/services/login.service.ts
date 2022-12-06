@@ -37,7 +37,7 @@ export class AppAuthService implements OnInit, OnDestroy {
       )
       .subscribe((result: EventMessage) => {
         if (this.authService.instance.getAllAccounts().length === 0) {
-          window.location.pathname = '/';
+          window.location.pathname = environment.redirectUri;
         } else {
           console.log(result);
           this.isAuthenticated();
@@ -54,7 +54,15 @@ export class AppAuthService implements OnInit, OnDestroy {
       .subscribe(() => {
         this.isAuthenticated();
         this.checkAndSetActiveAccount();
+        this.getClaim();
       });
+  }
+  getClaim(): void {
+    let activeAccount = this.authService.instance.getActiveAccount();
+    if(activeAccount)
+    {
+      console.log(activeAccount);
+    }
   }
   ngOnDestroy(): void {
     this._destroying$.next(undefined);
@@ -63,6 +71,7 @@ export class AppAuthService implements OnInit, OnDestroy {
 
   checkAndSetActiveAccount(): void {
     let activeAccount = this.authService.instance.getActiveAccount();
+    console.log(activeAccount);
     if (!activeAccount && this.isLoggedIn) {
       let accounts = this.authService.instance.getAllAccounts();
       this.authService.instance.setActiveAccount(accounts[0]);

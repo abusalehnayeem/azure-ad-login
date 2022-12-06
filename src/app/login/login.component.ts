@@ -8,13 +8,13 @@ import { AppAuthService } from '../services/login.service';
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
-  private readonly _destroying$ = new Subject<void>();
   isLoggedIn: boolean = false;
 
   constructor(
     private readonly router: Router,
     private readonly authService: AppAuthService
   ) {}
+
   login() {
     if (!this.authenticated) {
       this.authService.login();
