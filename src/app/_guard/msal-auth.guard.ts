@@ -13,7 +13,7 @@ export class MsalAuthGuard implements CanActivate {
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-      return this.authService.isAuthenticated() ? true : false;
+      return this.authService.isAuthenticated() && (localStorage.getItem('msal.token')?.trim() !== null || localStorage.getItem('msal.token')?.trim() !== undefined) ? true : false;
   }
 
 }

@@ -13,30 +13,9 @@ export class AppComponent implements OnInit {
   public isLoggedIn = false;
 
   constructor(
-    private readonly authService: AppAuthService,
-    private readonly router: Router
   ) {}
 
   ngOnInit(): void {
-    console.log('status: ', this.isLoggedIn);
-    if (!this.authenticated) {
-      this.authService.login();
-    }
-  }
 
-  get authenticated(): boolean {
-    return this.authService.isAuthenticated();
-  }
-
-  login() {
-    if (!this.authenticated) {
-      this.authService.login();
-    } else {
-      this.router.navigate(['/home']);
-    }
-  }
-
-  logout() {
-    this.authService.logout();
   }
 }

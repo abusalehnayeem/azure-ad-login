@@ -6,6 +6,7 @@ import {
   MSAL_GUARD_CONFIG,
 } from '@azure/msal-angular';
 import {
+  AuthenticationResult,
   EventMessage,
   EventType,
   InteractionStatus,
@@ -25,24 +26,24 @@ export class AppAuthService implements OnInit, OnDestroy {
     private readonly msalBroadcastService: MsalBroadcastService
   ) {}
   ngOnInit(): void {
-    this.authService.instance.enableAccountStorageEvents();
+    // this.authService.instance.enableAccountStorageEvents();
 
-    this.msalBroadcastService.msalSubject$
-      .pipe(
-        filter(
-          (msg: EventMessage) =>
-            msg.eventType === EventType.ACCOUNT_ADDED ||
-            msg.eventType === EventType.ACCOUNT_REMOVED
-        )
-      )
-      .subscribe((result: EventMessage) => {
-        if (this.authService.instance.getAllAccounts().length === 0) {
-          window.location.pathname = environment.redirectUri;
-        } else {
-          console.log(result);
-          this.isAuthenticated();
-        }
-      });
+    // this.msalBroadcastService.msalSubject$
+    //   .pipe(
+    //     filter(
+    //       (msg: EventMessage) =>
+    //         msg.eventType === EventType.ACCOUNT_ADDED ||
+    //         msg.eventType === EventType.ACCOUNT_REMOVED
+    //     )
+    //   )
+    //   .subscribe((result: EventMessage) => {
+    //     if (this.authService.instance.getAllAccounts().length === 0) {
+    //       window.location.pathname = environment.redirectUri;
+    //     } else {
+    //       console.log(result);
+    //       this.isAuthenticated();
+    //     }
+    //   });
 
     this.msalBroadcastService.inProgress$
       .pipe(
@@ -51,16 +52,20 @@ export class AppAuthService implements OnInit, OnDestroy {
         ),
         takeUntil(this._destroying$)
       )
-      .subscribe(() => {
-        this.isAuthenticated();
-        this.checkAndSetActiveAccount();
-        this.getClaim();
+      .subscribe({
+        next: (resp) => {
+          this.isAuthenticated();
+          this.checkAndSetActiveAccount();
+        },
+        error: (e) => console.log(e),
+        complete: () => {
+          this.getClaim();
+        }
       });
   }
   getClaim(): void {
     let activeAccount = this.authService.instance.getActiveAccount();
-    if(activeAccount)
-    {
+    if (activeAccount) {
       console.log(activeAccount);
     }
   }
@@ -75,6 +80,10 @@ export class AppAuthService implements OnInit, OnDestroy {
     if (!activeAccount && this.isLoggedIn) {
       let accounts = this.authService.instance.getAllAccounts();
       this.authService.instance.setActiveAccount(accounts[0]);
+
+      activeAccount = this.authService.instance.getActiveAccount();
+      console.log('hello: ',activeAccount);
+
     } else {
       this.authService.instance.setActiveAccount(activeAccount);
     }
