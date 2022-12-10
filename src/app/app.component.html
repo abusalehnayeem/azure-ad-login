@@ -1,4 +1,5 @@
 <div class="container">
-  <router-outlet></router-outlet>
+  <app-header *ngIf="appIsInit"></app-header>
+  <router-outlet *ngIf="appIsInit"></router-outlet>
 </div>
 

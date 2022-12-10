@@ -8,15 +8,15 @@ import { MsalBroadcastService, MsalGuard, MsalInterceptor, MsalModule, MsalRedir
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { MSALInstanceFactory, MSALGuardConfigFactory, MSALInterceptorConfigFactory } from './msal-config';
 import { AppAuthService } from './services/login.service';
-import { LoginComponent } from './components/login/login.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
+import { HeaderComponent } from './components/header/header.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     HomeComponent,
-    LoginComponent,
-    NotFoundComponent
+    NotFoundComponent,
+    HeaderComponent
   ],
   imports: [
     BrowserModule,

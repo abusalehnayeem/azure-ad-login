@@ -8,6 +8,7 @@ import {
   PublicClientApplication,
   BrowserCacheLocation,
   InteractionType,
+  RedirectRequest,
 } from '@azure/msal-browser';
 import { environment } from '../environments/environment';
 
@@ -27,12 +28,8 @@ const requestScopes = {
 
 export function loggerCallback(
   logLevel: LogLevel,
-  message: string,
-  containsPii: any
+  message: string
 ) {
-  if (containsPii) {
-    return;
-  }
   switch (logLevel) {
     case LogLevel.Error:
       console.error(message);
@@ -66,7 +63,7 @@ export function MSALInstanceFactory(): IPublicClientApplication {
     system: {
       loggerOptions: {
         loggerCallback,
-        logLevel: LogLevel.Info,
+        logLevel: LogLevel.Info || LogLevel.Warning || LogLevel.Trace || LogLevel.Error,
         piiLoggingEnabled: false,
       },
     },
@@ -92,3 +89,9 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
     loginFailedRoute: environment.redirectUri,
   };
 }
+
+export const redirectAuthenticationParameters: RedirectRequest = {
+  scopes: [
+    `api://${environment.CLINT_ID}/access_as_user`
+  ]
+};

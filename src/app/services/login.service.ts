@@ -1,117 +1,82 @@
-import { Inject, Injectable, OnInit, OnDestroy } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import {
-  MsalBroadcastService,
   MsalGuardConfiguration,
   MsalService,
   MSAL_GUARD_CONFIG,
 } from '@azure/msal-angular';
-import {
-  AuthenticationResult,
-  EventMessage,
-  EventType,
-  InteractionStatus,
-  RedirectRequest,
-} from '@azure/msal-browser';
-import { filter, Subject, takeUntil } from 'rxjs';
-import { environment } from 'src/environments/environment';
+import { InteractionType, RedirectRequest } from '@azure/msal-browser';
+import { environment } from '../../environments/environment';
+import { redirectAuthenticationParameters } from '../msal-config';
 
 @Injectable({ providedIn: 'root' })
-export class AppAuthService implements OnInit, OnDestroy {
-  private readonly _destroying$ = new Subject<void>();
-  isLoggedIn: boolean = false;
-
+export class AppAuthService {
   constructor(
     @Inject(MSAL_GUARD_CONFIG) private msalGuardConfig: MsalGuardConfiguration,
-    private readonly authService: MsalService,
-    private readonly msalBroadcastService: MsalBroadcastService
+    private readonly authService: MsalService
   ) {}
-  ngOnInit(): void {
-    // this.authService.instance.enableAccountStorageEvents();
-
-    // this.msalBroadcastService.msalSubject$
-    //   .pipe(
-    //     filter(
-    //       (msg: EventMessage) =>
-    //         msg.eventType === EventType.ACCOUNT_ADDED ||
-    //         msg.eventType === EventType.ACCOUNT_REMOVED
-    //     )
-    //   )
-    //   .subscribe((result: EventMessage) => {
-    //     if (this.authService.instance.getAllAccounts().length === 0) {
-    //       window.location.pathname = environment.redirectUri;
-    //     } else {
-    //       console.log(result);
-    //       this.isAuthenticated();
-    //     }
-    //   });
-
-    this.msalBroadcastService.inProgress$
-      .pipe(
-        filter(
-          (status: InteractionStatus) => status === InteractionStatus.None
-        ),
-        takeUntil(this._destroying$)
-      )
-      .subscribe({
-        next: (resp) => {
-          this.isAuthenticated();
-          this.checkAndSetActiveAccount();
-        },
-        error: (e) => console.log(e),
-        complete: () => {
-          this.getClaim();
-        }
-      });
-  }
-  getClaim(): void {
-    let activeAccount = this.authService.instance.getActiveAccount();
-    if (activeAccount) {
-      console.log(activeAccount);
-    }
-  }
-  ngOnDestroy(): void {
-    this._destroying$.next(undefined);
-    this._destroying$.complete();
-  }
-
-  checkAndSetActiveAccount(): void {
-    let activeAccount = this.authService.instance.getActiveAccount();
-    console.log(activeAccount);
-    if (!activeAccount && this.isLoggedIn) {
-      let accounts = this.authService.instance.getAllAccounts();
-      this.authService.instance.setActiveAccount(accounts[0]);
-
-      activeAccount = this.authService.instance.getActiveAccount();
-      console.log('hello: ',activeAccount);
-
-    } else {
-      this.authService.instance.setActiveAccount(activeAccount);
-    }
-  }
 
   isAuthenticated(): boolean {
-    this.isLoggedIn = this.authService.instance.getAllAccounts().length > 0;
-    return this.isLoggedIn;
+    let accountList = this.authService.instance.getAllAccounts();
+    if (accountList && accountList.length > 0) {
+      this.authService.instance.setActiveAccount(accountList[0]);
+      return true;
+    } else {
+      return false;
+    }
   }
 
-  login(): void {
-    if (this.msalGuardConfig.authRequest) {
-      this.authService.loginRedirect({
-        ...this.msalGuardConfig.authRequest,
-      } as RedirectRequest);
+  login() {
+    if (this.msalGuardConfig.interactionType == InteractionType.Redirect) {
+      if (this.msalGuardConfig) {
+        this.authService.loginRedirect({
+          ...this.msalGuardConfig.authRequest,
+        } as RedirectRequest);
+      } else {
+        throw new Error('msal guard config is not set!');
+      }
     } else {
-      this.authService.loginRedirect();
+      throw new Error('application only support redirection!');
     }
+  }
+
+  // checkAndSetActiveAccount(): void {
+  //   let activeAccount = this.authService.instance.getActiveAccount();
+  //   console.log(activeAccount);
+  //   if (!activeAccount && this.isLoggedIn) {
+  //     let accounts = this.authService.instance.getAllAccounts();
+  //     this.authService.instance.setActiveAccount(accounts[0]);
+
+  //     activeAccount = this.authService.instance.getActiveAccount();
+  //     console.log('hello: ',activeAccount?.idTokenClaims);
+
+  //   } else {
+  //     this.authService.instance.setActiveAccount(activeAccount);
+  //   }
+  // }
+
+  refreshToken() {
+    let activeAccount =
+      this.authService.instance.getActiveAccount() ||
+      this.authService.instance.getAllAccounts()[0];
+    if (!activeAccount) {
+      throw new Error(
+        'No active account! Verify a user has been signed in and setActiveAccount has been called.'
+      );
+    }
+    this.authService.acquireTokenSilent({
+      ...redirectAuthenticationParameters,
+      account: activeAccount,
+    });
   }
 
   public logout() {
-    const activeAccount =
-      this.authService.instance.getActiveAccount() ||
-      this.authService.instance.getAllAccounts()[0];
-    this.isLoggedIn = false;
-    this.authService.logout({
-      account: activeAccount,
-      postLogoutRedirectUri: environment.postLogoutRedirectUri,
-    });
+    let activeAccount = this.authService.instance.getActiveAccount();
+    let isLoggedIn = this.isAuthenticated();
+    if (activeAccount && isLoggedIn) {
+      this.authService.logout({
+        account: activeAccount,
+        postLogoutRedirectUri: environment.postLogoutRedirectUri,
+      });
+    }
   }
 }

@@ -4,5 +4,5 @@ export const environment = {
   redirectUri: "http://localhost:4200/",
   AUTHORITY: 'https://login.microsoftonline.com/51660e8a-d6b9-4527-84c7-c9d9dbd47526/',
   postLogoutRedirectUri: 'http://localhost:4200/',
-  GRAPH_API_ENDPOINT: 'https://graph.microsoft.com/v1.0/me'
+  GRAPH_API_ENDPOINT: '*'
 };
